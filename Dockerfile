@@ -32,6 +32,6 @@ ENV NOTICE_SERVER_URL=https://publishing-production-d35a.up.railway.app/
 EXPOSE ${PORT}
 
 HEALTHCHECK --interval=60s --start-period=120s\
-   CMD curl http://localhost:${PORT}/status || exit 1
+   CMD curl -s -f http://localhost:${PORT}/status || exit 1
 
 ENTRYPOINT SERVER_PORT=${PORT} java -jar app.jar
