@@ -1,7 +1,9 @@
 package vttp.batch5.ssf.noticeboard.services;
 
+import java.io.StringReader;
 import java.util.logging.Logger;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
@@ -12,17 +14,22 @@ import org.springframework.web.client.RestTemplate;
 import jakarta.json.Json;
 import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
+import jakarta.json.JsonReader;
 import vttp.batch5.ssf.noticeboard.models.Notice;
+import vttp.batch5.ssf.noticeboard.repositories.NoticeRepository;
 
 @Service
 public class NoticeService {
+
+	@Autowired
+	private NoticeRepository noticeRepo;
 
 	private final Logger logger = Logger.getLogger(NoticeService.class.getName());
 
 	@Value("${notice.server.url}")
   	private String noticeServerUrl;
 
-	public ResponseEntity<String> postToNoticeServer(Notice notice) {
+	public boolean postToNoticeServer(Notice notice) {
 
 		// 1. URL
 		String url = noticeServerUrl + "/notice";
@@ -58,14 +65,32 @@ public class NoticeService {
 		try {
 			resp = template.exchange(req, String.class);
 
-			return resp;
+			if (resp.getStatusCode().is2xxSuccessful()) {
+
+				String payload = resp.getBody();
+
+				JsonReader reader = Json.createReader(new StringReader(payload));
+
+				JsonObject respObj = reader.readObject();
+
+				String id = respObj.getString("id");
+				
+				noticeRepo.insertNotices(id, respObj.toString());
+
+				return true;
+			}
+
+			else{
+				// If submission is not succesful
+				return false;
+			}
 		}
 
 		catch (Exception e) {
 
 			logger.info("Error occured: %s.".formatted(e.getMessage()));
 
-			return resp;
+			return false;
 		}	
 	}	
 }
