@@ -106,5 +106,9 @@ public class NoticeService {
 
 			return statusWithMessage;
 		}	
-	}	
+	}
+
+	public void checkRedisHealth() throws Exception {
+		noticeRepo.getRandomKey();
+	}
 }

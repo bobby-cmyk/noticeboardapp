@@ -15,4 +15,9 @@ public class NoticeRepository {
 	public void insertNotices(String id, String respString) {
 		template.opsForValue().set(id, respString);
 	}
+
+	// randomkey
+	public void getRandomKey() throws Exception{
+		template.randomKey();
+	}
 }
