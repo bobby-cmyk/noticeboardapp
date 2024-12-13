@@ -1,7 +1,6 @@
 package vttp.batch5.ssf.noticeboard.services;
 
 import java.io.StringReader;
-import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,8 +21,6 @@ import vttp.batch5.ssf.noticeboard.repositories.NoticeRepository;
 
 @Service
 public class NoticeService {
-
-	private final Logger logger = Logger.getLogger(NoticeService.class.getName());
 
 	@Autowired
 	private NoticeRepository noticeRepo;
@@ -50,6 +47,8 @@ public class NoticeService {
 			.add("categories", builderArr)
 			.add("text", notice.getText())
 			.build();
+
+		System.out.println(reqBody.toString());
 
 		// Build Request Entity
 		RequestEntity<String> req = RequestEntity

@@ -90,13 +90,14 @@ public class NoticeController {
     @ResponseBody
     public ResponseEntity<String> getHealthStatus() {
         try {
+            noticeSvc.checkRedisHealth();
             logger.info("System is healthy");
-            return ResponseEntity.ok().build();
+            return ResponseEntity.ok("{}");
         }
 
         catch (Exception ex) {
             logger.info("System is unhealthy");
-            return ResponseEntity.status(503).build();
+            return ResponseEntity.status(503).body("{}");
         }
     }
 }
