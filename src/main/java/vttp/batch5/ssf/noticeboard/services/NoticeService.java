@@ -48,8 +48,6 @@ public class NoticeService {
 			.add("text", notice.getText())
 			.build();
 
-		System.out.println(reqBody.toString());
-
 		// Build Request Entity
 		RequestEntity<String> req = RequestEntity
 			.post(url)
