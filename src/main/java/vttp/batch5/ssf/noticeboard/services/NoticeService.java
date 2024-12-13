@@ -23,17 +23,17 @@ import vttp.batch5.ssf.noticeboard.repositories.NoticeRepository;
 @Service
 public class NoticeService {
 
+	private final Logger logger = Logger.getLogger(NoticeService.class.getName());
+
 	@Autowired
 	private NoticeRepository noticeRepo;
-
-	private final Logger logger = Logger.getLogger(NoticeService.class.getName());
 
 	@Value("${notice.server.url}")
   	private String noticeServerUrl;
 
 	public Response postToNoticeServer(Notice notice) {
 
-		// 1. URL
+		// Build URL
 		String url = noticeServerUrl + "/notice";
 
 		JsonArrayBuilder builderArr = Json.createArrayBuilder();
@@ -42,7 +42,7 @@ public class NoticeService {
 			builderArr.add(category);
 		}
 		
-		// 2. Payload
+		// Build Payload
 		JsonObject reqBody = Json.createObjectBuilder()
 			.add("title", notice.getTitle())
 			.add("poster", notice.getPoster())
@@ -51,15 +51,14 @@ public class NoticeService {
 			.add("text", notice.getText())
 			.build();
 
-		// 3. Request Entity
+		// Build Request Entity
 		RequestEntity<String> req = RequestEntity
 			.post(url)
 			.contentType(MediaType.APPLICATION_JSON)
 			.accept(MediaType.APPLICATION_JSON)
 			.body(reqBody.toString(), String.class);
-		
-		logger.info("Request:\n %s \n".formatted(req.toString()));
 
+		// RestTemplate to exchange for response
 		RestTemplate template = new RestTemplate();
 
 		ResponseEntity<String> resp = null;

@@ -18,16 +18,14 @@ import vttp.batch5.ssf.noticeboard.models.Notice;
 import vttp.batch5.ssf.noticeboard.models.Response;
 import vttp.batch5.ssf.noticeboard.services.NoticeService;
 
-// Use this class to write your request handlers
-
 @Controller
 @RequestMapping
 public class NoticeController {
 
+    private final Logger logger = Logger.getLogger(NoticeController.class.getName());
+
     @Autowired
     private NoticeService noticeSvc;
-    
-    private final Logger logger = Logger.getLogger(NoticeController.class.getName());
     
     @GetMapping
     public ModelAndView getNoticePage() {

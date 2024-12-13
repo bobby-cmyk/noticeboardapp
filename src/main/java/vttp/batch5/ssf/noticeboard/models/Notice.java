@@ -38,7 +38,7 @@ public class Notice {
 
     public LocalDate getPostDate() {return postDate;}
     public void setPostDate(LocalDate postDate) {this.postDate = postDate;}
-
+    
     public long getPostDateEpoch() {
         ZoneId zoneId = ZoneId.systemDefault();
         long postDateEpoch = postDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
