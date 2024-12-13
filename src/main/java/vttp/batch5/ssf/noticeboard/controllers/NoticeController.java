@@ -3,7 +3,7 @@ package vttp.batch5.ssf.noticeboard.controllers;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
@@ -15,6 +15,7 @@ import org.springframework.web.servlet.ModelAndView;
 
 import jakarta.validation.Valid;
 import vttp.batch5.ssf.noticeboard.models.Notice;
+import vttp.batch5.ssf.noticeboard.models.Response;
 import vttp.batch5.ssf.noticeboard.services.NoticeService;
 
 // Use this class to write your request handlers
@@ -30,11 +31,11 @@ public class NoticeController {
     
     @GetMapping
     public ModelAndView getNoticePage() {
+        logger.info("A visitor has reached the notice page.");
+
         ModelAndView mav = new ModelAndView();
 
         Notice notice = new Notice();
-
-        logger.info("A visitor has reached the notice page.");
 
         mav.addObject("notice", notice);
         mav.setViewName("notice");
@@ -58,32 +59,31 @@ public class NoticeController {
             return mav;
         }
 
-        String statusWithMessage = noticeSvc.postToNoticeServer(notice);
+        Response response = noticeSvc.postToNoticeServer(notice);  
 
-
-        String[] parts = statusWithMessage.split(",");
-        // Get the status
-
-        String status = parts[0];    
+        HttpStatusCode statusCode = response.getStatusCode();
 
         // If succesfully posted to server
-        if (status.equals("success")) {
+        if (statusCode.is2xxSuccessful()) {
 
-            logger.info("Successfully posted to server and saved response to Redis.");
+            String id = response.getContent();
 
-            String id = parts[1];
+            logger.info("Successfully posted to server and saved id: %s to Redis.".formatted(id));
 
             mav.addObject("id", id);
             mav.setViewName("view2");
+
             return mav;
         }
 
         else {
+            String message = response.getContent();
 
-            String message = parts[1];
+            logger.info("Unsuccessful when posting to server, error message: %s".formatted(message));
 
             mav.addObject("message", message);
             mav.setViewName("view3");
+
             return mav;
         }
     }
@@ -92,10 +92,12 @@ public class NoticeController {
     @ResponseBody
     public ResponseEntity<String> getHealthStatus() {
         try {
+            logger.info("System is healthy");
             return ResponseEntity.ok().build();
         }
 
         catch (Exception ex) {
+            logger.info("System is unhealthy");
             return ResponseEntity.status(503).build();
         }
     }

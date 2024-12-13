@@ -5,6 +5,7 @@ import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.RequestEntity;
 import org.springframework.http.ResponseEntity;
@@ -16,6 +17,7 @@ import jakarta.json.JsonArrayBuilder;
 import jakarta.json.JsonObject;
 import jakarta.json.JsonReader;
 import vttp.batch5.ssf.noticeboard.models.Notice;
+import vttp.batch5.ssf.noticeboard.models.Response;
 import vttp.batch5.ssf.noticeboard.repositories.NoticeRepository;
 
 @Service
@@ -29,7 +31,7 @@ public class NoticeService {
 	@Value("${notice.server.url}")
   	private String noticeServerUrl;
 
-	public String postToNoticeServer(Notice notice) {
+	public Response postToNoticeServer(Notice notice) {
 
 		// 1. URL
 		String url = noticeServerUrl + "/notice";
@@ -62,49 +64,48 @@ public class NoticeService {
 
 		ResponseEntity<String> resp = null;
 
+		// Initialise a response to be returned
+		Response response = new Response();
+
 		try {
 			resp = template.exchange(req, String.class);
 
-			if (resp.getStatusCode().is2xxSuccessful()) {
+			String payload = resp.getBody();
 
-				String payload = resp.getBody();
+			JsonReader reader = Json.createReader(new StringReader(payload));
 
-				JsonReader reader = Json.createReader(new StringReader(payload));
+			JsonObject respObj = reader.readObject();
 
-				JsonObject respObj = reader.readObject();
-
+			HttpStatusCode statusCode = resp.getStatusCode();
+			
+			if (statusCode.is2xxSuccessful()) {
 				String id = respObj.getString("id");
 				
 				noticeRepo.insertNotices(id, respObj.toString());
 
-				String statusWithMessage = "success" + "," + id;
+				response.setStatusCode(statusCode);
+				response.setContent(id);
 
-				return statusWithMessage;
+				return response;
 			}
 
+			// If submission is not succesful
 			else{
-				// If submission is not succesful
-				String payload = resp.getBody();
-
-				JsonReader reader = Json.createReader(new StringReader(payload));
-
-				JsonObject respObj = reader.readObject();
-
 				String message = respObj.getString("message");
 
-				String statusWithMessage = "notsuccess" + "," + message;
+				response.setStatusCode(statusCode);
+				response.setContent(message);
 				
-				return statusWithMessage;
+				return response;
 			}
 		}
 
 		catch (Exception e) {
+			// Set to 500 to avoid null
+			response.setStatusCode(HttpStatusCode.valueOf(500));
+			response.setContent(e.getMessage());
 
-			logger.info("Error occured: %s.".formatted(e.getMessage()));
-
-			String statusWithMessage = "notsuccess" + "," + e.getMessage();
-
-			return statusWithMessage;
+			return response;
 		}	
 	}
 
