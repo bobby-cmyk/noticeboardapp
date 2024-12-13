@@ -29,7 +29,7 @@ public class NoticeService {
 	@Value("${notice.server.url}")
   	private String noticeServerUrl;
 
-	public boolean postToNoticeServer(Notice notice) {
+	public String postToNoticeServer(Notice notice) {
 
 		// 1. URL
 		String url = noticeServerUrl + "/notice";
@@ -77,12 +77,24 @@ public class NoticeService {
 				
 				noticeRepo.insertNotices(id, respObj.toString());
 
-				return true;
+				String statusWithMessage = "success" + "," + id;
+
+				return statusWithMessage;
 			}
 
 			else{
 				// If submission is not succesful
-				return false;
+				String payload = resp.getBody();
+
+				JsonReader reader = Json.createReader(new StringReader(payload));
+
+				JsonObject respObj = reader.readObject();
+
+				String message = respObj.getString("message");
+
+				String statusWithMessage = "notsuccess" + "," + message;
+				
+				return statusWithMessage;
 			}
 		}
 
@@ -90,7 +102,9 @@ public class NoticeService {
 
 			logger.info("Error occured: %s.".formatted(e.getMessage()));
 
-			return false;
+			String statusWithMessage = "notsuccess" + "," + e.getMessage();
+
+			return statusWithMessage;
 		}	
 	}	
 }

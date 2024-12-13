@@ -3,7 +3,6 @@ package vttp.batch5.ssf.noticeboard.controllers;
 import java.util.logging.Logger;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -56,9 +55,35 @@ public class NoticeController {
             return mav;
         }
 
-        noticeSvc.postToNoticeServer(notice);
+        String statusWithMessage = noticeSvc.postToNoticeServer(notice);
 
-        mav.setViewName("notice");
-        return mav;
+
+        String[] parts = statusWithMessage.split(",");
+        // Get the status
+
+        String status = parts[0];    
+
+        // If succesfully posted to server
+        if (status.equals("success")) {
+
+            logger.info("Successfully posted to server and saved response to Redis.");
+
+            String id = parts[1];
+
+            mav.addObject("id", id);
+            mav.setViewName("view2");
+            return mav;
+        }
+
+        else {
+
+            String message = parts[1];
+
+            mav.addObject("message", message);
+            mav.setViewName("view3");
+            return mav;
+        }
+
+       
     }
 }
