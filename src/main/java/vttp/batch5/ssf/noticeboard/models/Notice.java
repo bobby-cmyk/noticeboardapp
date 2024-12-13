@@ -1,6 +1,7 @@
 package vttp.batch5.ssf.noticeboard.models;
 
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.List;
 
 import org.springframework.format.annotation.DateTimeFormat;
@@ -11,7 +12,6 @@ import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.Size;
 
 public class Notice {
-
     @NotEmpty(message="Title cannot be empty")
     @Size(min=3, max=128, message="Length must be between 3 and 123 characters")
     private String title;
@@ -34,19 +34,20 @@ public class Notice {
     public void setTitle(String title) {this.title = title;}
 
     public String getPoster() {return poster;}
-
     public void setPoster(String poster) {this.poster = poster;}
 
     public LocalDate getPostDate() {return postDate;}
-
     public void setPostDate(LocalDate postDate) {this.postDate = postDate;}
 
-    public List<String> getCategories() {return categories;}
+    public long getPostDateEpoch() {
+        ZoneId zoneId = ZoneId.systemDefault();
+        long postDateEpoch = postDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
+        return postDateEpoch;
+    }
 
+    public List<String> getCategories() {return categories;}
     public void setCategories(List<String> categories) {this.categories = categories;}
 
     public String getText() {return text;}
-
     public void setText(String text) {this.text = text;}
-    
 }
