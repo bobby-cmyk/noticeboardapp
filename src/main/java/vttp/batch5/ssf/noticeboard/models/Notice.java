@@ -9,6 +9,7 @@ import org.springframework.format.annotation.DateTimeFormat;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Future;
 import jakarta.validation.constraints.NotEmpty;
+import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 
 public class Notice {
@@ -20,6 +21,7 @@ public class Notice {
     @Email(message="Must be a well-formed email address")
     private String poster;
 
+    @NotNull(message="Post date cannot be empty")
     @Future(message="Post date must be future dates")
     @DateTimeFormat(pattern = "yyyy-MM-dd")
     private LocalDate postDate;
@@ -38,7 +40,7 @@ public class Notice {
 
     public LocalDate getPostDate() {return postDate;}
     public void setPostDate(LocalDate postDate) {this.postDate = postDate;}
-    
+
     public long getPostDateEpoch() {
         ZoneId zoneId = ZoneId.systemDefault();
         long postDateEpoch = postDate.atStartOfDay(zoneId).toInstant().toEpochMilli();
